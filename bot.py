@@ -19,13 +19,20 @@ def handle_start(message):
 def handle_help(message): 
 	bot.send_message(message.chat.id, 'Привет!\nОтправляешь боту номер телефона в формате 79xxxxxxxxx, а он спамит жертву.\nВсё просто!\nВсе вопросы к @FSystem88\nКанал: @spymer')
 
-@bot.message_handler(func=lambda message: True, content_types=['text']) 
+@bot.message_handler(commands=['unban']) 
+def handle_unban(message):
+	if message.chat.id == owner:
+		pass
+	else:
+		bot.send_message(message.chat.id, "Доступно только админу")
+
+@bot.message_handler(func=lambda message: True, content_types=['text'])
 def main(message):
 	with open("ids.txt") as file:
 		array = [row.strip() for row in file]
 	iduser = f'{message.chat.id}'
 	if iduser in array:
-		bot.send_message(message.chat.id, "Вы в черном листе!\nЕсли Вы считаете, что бан был получен случайно - обращайтесь к @FSystem88")
+		bot.send_message(message.chat.id, "Вы в черном листе!\nЕсли Вы считаете, что бан был получен случайно - обращайтесь к @FSystem88.\nВот Ваш id? он пригодится админу: <b>"+f'{message.chat.id}'+"</b>", parse_mode="HTML")
 	else:
 		try:
 			_phone = message.text
@@ -122,4 +129,3 @@ def main(message):
 		except:
 			bot.send_message(owner, "Ошибка после пользователя: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>" , parse_mode="HTML")
 bot.polling()
-GEc4TVll4Awp
