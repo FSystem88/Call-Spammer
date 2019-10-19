@@ -88,7 +88,10 @@ def handle_start(message):
 	try:
 		db = sqlite3.connect("users.db")
 		dbs = db.cursor()
-		dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
+		try:
+			dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
+		except:
+			pass
 		bot.send_message(owner, "Новый пользователь: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nUsername: @"+f'{message.chat.username}'+"\niD: "+f'{message.chat.id}', parse_mode="HTML")
 		bot.send_message(message.chat.id, 'Привет, ' + message.chat.first_name + '\nЯ бот от @FSystem88.\nОтправь мне номер телефона в формате 79xxxxxxxxx, чтобы начать СМС спам.\n\nВообще как бы сервисов много, но из-за того, что трафик проходит через VPN соединение (спасибо РКН за блокировку Telegram на территории РФ), то смсок доходит только около 17.\nБуду решать эту проблему.')
 	except:
