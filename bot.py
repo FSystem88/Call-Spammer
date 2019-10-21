@@ -3,6 +3,11 @@ import telebot, requests, random, datetime, sys, time, argparse, json, re, sqlit
 from telebot import types
 bot = telebot.TeleBot("965521501:AAHYwmNj3gR4xbJTDH9HsZkme0kObgrwI3o")
 owner = 355821673
+def sleep(x):
+	try:
+		time.sleep(x)
+	except:
+		pass
 
 db = sqlite3.connect("users.db")
 dbs = db.cursor()
@@ -98,14 +103,20 @@ def addbl(message):
 @bot.message_handler(commands=['start']) 
 def handle_start(message): 
 	try:
-		db = sqlite3.connect("users.db")
-		dbs = db.cursor()
-		dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
+		try:
+			db = sqlite3.connect("users.db")
+			dbs = db.cursor()
+			dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
+		except:
+			pass
+		keyboard1 = telebot.types.ReplyKeyboardMarkup()
+		keyboard1.row('Спамер', 'Настройки')
+		bot.send_message(owner, "Новый пользователь: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nUsername: @"+f'{message.chat.username}'+"\niD: "+f'{message.chat.id}', parse_mode="HTML")
+		bot.send_message(message.chat.id, 'Привет, ' + message.chat.first_name + '\nЯ бот от @FSystem88.\nОтправь мне номер телефона в формате 79xxxxxxxxx, чтобы начать СМС спам.\n\nВообще как бы сервисов много, но из-за того, что трафик проходит через VPN соединение (спасибо РКН за блокировку Telegram на территории РФ), то смсок доходит только около 17.\nБуду решать эту проблему.', reply_markup=keyboard1)
 	except:
 		pass
-	bot.send_message(owner, "Новый пользователь: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nUsername: @"+f'{message.chat.username}'+"\niD: "+f'{message.chat.id}', parse_mode="HTML")
-	bot.send_message(message.chat.id, 'Привет, ' + message.chat.first_name + '\nЯ бот от @FSystem88.\nОтправь мне номер телефона в формате 79xxxxxxxxx, чтобы начать СМС спам.\n\nВообще как бы сервисов много, но из-за того, что трафик проходит через VPN соединение (спасибо РКН за блокировку Telegram на территории РФ), то смсок доходит только около 17.\nБуду решать эту проблему.')
-
+		
+		
 @bot.message_handler(commands=['help']) 
 def handle_help(message): 
 	try:
@@ -114,39 +125,36 @@ def handle_help(message):
 		pass
 
 
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+def SSinline(message):
+	try:
+		if message.text == 'Спамер':
+			db = sqlite3.connect("users.db")
+			dbs = db.cursor()
+			sql="select * from id"+f'{message.chat.id}'
+			dbs.execute(sql)
+			a =dbs.fetchall()
+			array = list(a)
+			for row in array:
+				phone = row[0]
+				count = row[1]
+				key = types.InlineKeyboardMarkup()
+				but1 = types.InlineKeyboardButton(text="Старт", callback_data=phone+"_"+count)
+				key.add(but1)
+				bot.send_message(message.chat.id, 'Телефон: {}.\nКол-во потоков: {}'.format(phone, count), reply_markup=key)	
+			bot.register_next_step_handler(message, inline);
+	except:
+		pass
 
-@bot.message_handler(commands=["kkk"])
-def inline(message):
-	id = message.chat.id
-	key = types.InlineKeyboardMarkup(row_width=1)
-	but1 = types.InlineKeyboardButton(text="Запустить спамер", callback_data="spammer")
-	but2 = types.InlineKeyboardButton(text="Амнистия", callback_data="amnesty")
-	key.add(but1, but2)
-	bot.send_message(message.chat.id, "ВЫБЕРИТЕ ДЕЙСТВИЕ", reply_markup=key)
-	bot.register_next_step_handler(message, SSinline);
-	
 @bot.callback_query_handler(func=lambda c:True)
-def SSinline(c):
-	if c.data == 'spammer':
-		db = sqlite3.connect("users.db")
-		dbs = db.cursor()
-		sql="select * from id"+f'{c.message.chat.id}'
-		dbs.execute(sql)
-		a =dbs.fetchall()
-		data = list(a)
-		for row in data:
-			key = types.InlineKeyboardMarkup()
-			but1 = types.InlineKeyboardButton(text="Запустить спамер", callback_data="nameButton")
-			key.add(but1)
-			bot.send_message(c.message.chat.id, 'Телефон: {}.\nКол-во потоков: {}'.format(row[0], row[1]), reply_markup=key)	
-	if c.data == 'amnesty':
-		if c.message.chat.id == owner:
-			f = open('idBL.txt', 'w')
-			f.write('\n')
-			bot.send_message(owner, 'Амнистия прошла успешно')
-		else:
-			pass
-		
+def inline(c):
+	try:
+		if c.data != None:
+			phone= c.data[:11]
+			count= c.data[12:]
+			bot.send_message(c.message.chat.id, c.data[12:])
+	except:
+		pass
 
 
 @bot.message_handler(commands=['delbl']) 
