@@ -3,15 +3,33 @@ import telebot, requests, random, datetime, sys, time, argparse, json, re, sqlit
 from telebot import types
 bot = telebot.TeleBot("965521501:AAHYwmNj3gR4xbJTDH9HsZkme0kObgrwI3o")
 owner = 355821673
-def sleep(x):
-	try:
-		time.sleep(x)
-	except:
-		pass
 
 db = sqlite3.connect("users.db")
 dbs = db.cursor()
 
+@bot.message_handler(commands=['fff']) 
+def fff(message):
+	bot.send_message(message.chat.id, "Введите номер телефона?");
+	bot.register_next_step_handler(message, get_phone);
+def get_phone(message):
+	global phone;
+	phone = message.text;
+	bot.send_message(message.chat.id, "Введите количество потоков?");
+	bot.register_next_step_handler(message, get_count);
+def get_count(message):
+	global count;
+	count = message.text;
+	bot.send_message(message.chat.id, "Номер: "+phone+"\nКол-во: "+count+".\nСохранено!");
+	id = message.chat.id
+	db = sqlite3.connect("users.db")
+	dbs = db.cursor()
+	sql = "INSERT INTO id{} (phone, count) VALUES ('{}', '{}')".format(id, phone, count)
+	dbs.execute(sql)
+	db.commit()
+
+	
+	
+	
 @bot.message_handler(commands=["ping"])
 def ping(message):
 	try:
@@ -29,40 +47,34 @@ def donate(message):
 @bot.message_handler(commands=["addwl"])
 def addWL(message):
 	try:
-		if message.chat.id == owner:
-			newtoper = f'{message.text[7:]}'
-			if newtoper == '':
+		newtoper = f'{message.text[7:]}'
+		if newtoper == '':
 				bot.send_message(owner, "Введите номер телефона пользователя")
-			else:
-				newtoper = '7'+newtoper[1:]
-				f = open('idWL.txt' , 'a')
-				f.write(f'{newtoper}' + '\n')
-				f.close()
-				bot.send_message(owner, "Добавлен новый пользователь в белый лист: "+f'{newtoper}')
 		else:
-			bot.send_message(message.chat.id, "Доступно только админу")
+			newtoper = '7'+newtoper[1:]
+			f = open('idWL.txt' , 'a')
+			f.write(f'{newtoper}' + '\n')
+			f.close()
+			bot.send_message(owner, "Добавлен новый пользователь в белый лист: "+f'{newtoper}')
 	except:
 		pass
 		
 @bot.message_handler(commands=['delwl']) 
 def delwl(message):
 	try:
-		if message.chat.id == owner:
-			iddelWL = f'{message.text[7:]}'
-			with open("idWL.txt") as file:
-				arrayWL = [row.strip() for row in file]
-				if iddelWL == '':
-					bot.send_message(owner, "Введите телефон, который надо удалить из Белого листа.")
-				elif iddelWL in arrayWL:
-					kkk = open('idWL.txt', 'r').read().replace(f'{iddelWL}', '')
-					f = open('idWL.txt', 'w')
-					f.write(kkk)
-					f.close()
-					bot.send_message(owner, 'Готово.')
-				else:
-					bot.send_message(owner, 'Такой юзер не найден')
-		else:
-			bot.send_message(message.chat.id, "Доступно только админу")
+		iddelWL = f'{message.text[7:]}'
+		with open("idWL.txt") as file:
+			arrayWL = [row.strip() for row in file]
+			if iddelWL == '':
+				bot.send_message(owner, "Введите телефон, который надо удалить из Белого листа.")
+			elif iddelWL in arrayWL:
+				kkk = open('idWL.txt', 'r').read().replace(f'{iddelWL}', '')
+				f = open('idWL.txt', 'w')
+				f.write(kkk)
+				f.close()
+				bot.send_message(owner, 'Готово.')
+			else:
+				bot.send_message(owner, 'Такой юзер не найден')
 	except:
 		pass
 
@@ -88,21 +100,54 @@ def handle_start(message):
 	try:
 		db = sqlite3.connect("users.db")
 		dbs = db.cursor()
-		try:
-			dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
-		except:
-			pass
-		bot.send_message(owner, "Новый пользователь: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nUsername: @"+f'{message.chat.username}'+"\niD: "+f'{message.chat.id}', parse_mode="HTML")
-		bot.send_message(message.chat.id, 'Привет, ' + message.chat.first_name + '\nЯ бот от @FSystem88.\nОтправь мне номер телефона в формате 79xxxxxxxxx, чтобы начать СМС спам.\n\nВообще как бы сервисов много, но из-за того, что трафик проходит через VPN соединение (спасибо РКН за блокировку Telegram на территории РФ), то смсок доходит только около 17.\nБуду решать эту проблему.')
+		dbs.execute("CREATE TABLE id"+f'{message.chat.id}'+" (phone text, count text)")
 	except:
 		pass
-		
+	bot.send_message(owner, "Новый пользователь: <a href='tg://user?id="+f'{message.chat.id}'+"'>"+f'{message.chat.first_name}'+"</a>\nUsername: @"+f'{message.chat.username}'+"\niD: "+f'{message.chat.id}', parse_mode="HTML")
+	bot.send_message(message.chat.id, 'Привет, ' + message.chat.first_name + '\nЯ бот от @FSystem88.\nОтправь мне номер телефона в формате 79xxxxxxxxx, чтобы начать СМС спам.\n\nВообще как бы сервисов много, но из-за того, что трафик проходит через VPN соединение (спасибо РКН за блокировку Telegram на территории РФ), то смсок доходит только около 17.\nБуду решать эту проблему.')
+
 @bot.message_handler(commands=['help']) 
 def handle_help(message): 
 	try:
 		bot.send_message(message.chat.id, 'Привет!\nОтправляешь боту номер телефона в формате 79xxxxxxxxx, а он спамит жертву.\nВсё просто!\nВсе вопросы к @FSystem88\nКанал: @spymer')
 	except:
 		pass
+
+
+
+@bot.message_handler(commands=["kkk"])
+def inline(message):
+	id = message.chat.id
+	key = types.InlineKeyboardMarkup(row_width=1)
+	but1 = types.InlineKeyboardButton(text="Запустить спамер", callback_data="spammer")
+	but2 = types.InlineKeyboardButton(text="Амнистия", callback_data="amnesty")
+	key.add(but1, but2)
+	bot.send_message(message.chat.id, "ВЫБЕРИТЕ ДЕЙСТВИЕ", reply_markup=key)
+	bot.register_next_step_handler(message, SSinline);
+	
+@bot.callback_query_handler(func=lambda c:True)
+def SSinline(c):
+	if c.data == 'spammer':
+		db = sqlite3.connect("users.db")
+		dbs = db.cursor()
+		sql="select * from id"+f'{c.message.chat.id}'
+		dbs.execute(sql)
+		a =dbs.fetchall()
+		data = list(a)
+		for row in data:
+			key = types.InlineKeyboardMarkup()
+			but1 = types.InlineKeyboardButton(text="Запустить спамер", callback_data="nameButton")
+			key.add(but1)
+			bot.send_message(c.message.chat.id, 'Телефон: {}.\nКол-во потоков: {}'.format(row[0], row[1]), reply_markup=key)	
+	if c.data == 'amnesty':
+		if c.message.chat.id == owner:
+			f = open('idBL.txt', 'w')
+			f.write('\n')
+			bot.send_message(owner, 'Амнистия прошла успешно')
+		else:
+			pass
+		
+
 
 @bot.message_handler(commands=['delbl']) 
 def delbl(message):
@@ -125,7 +170,9 @@ def delbl(message):
 			bot.send_message(message.chat.id, "Доступно только админу")
 	except:
 		pass
-		
+	
+
+	
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def main(message):
 	try:
