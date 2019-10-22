@@ -34,7 +34,7 @@ def handle_start(message):
 @bot.message_handler(commands=['help']) 
 def handle_help(message): 
 	try:
-		bot.send_message(message.chat.id, 'Привет!\nОтправляешь боту номер телефона в формате 79xxxxxxxxx, а он спамит жертву.\nВсё просто!\nВсе вопросы к @FSystem88\nКанал: @spymer')
+		bot.send_message(message.chat.id, 'Привет!\nЭто всего лишь говноспамер и ничего более.\nВсё просто!\nВсе вопросы к @FSystem88\nКанал: @spymer')
 	except:
 		pass
 
@@ -129,9 +129,11 @@ def delbl(message):
 	
 @bot.message_handler(commands=['phone'])
 def addph(message):
-	bot.send_message(message.chat.id, "Введите номер телефона?");
-	bot.register_next_step_handler(message, get_phone);
-
+	try:
+		bot.send_message(message.chat.id, "Введите номер телефона?");
+		bot.register_next_step_handler(message, get_phone);
+	except:
+		pass
 def get_phone(message):
 	try:
 		global phone;
@@ -163,7 +165,11 @@ def get_count(message):
 @bot.message_handler(func=lambda message: True, content_types=['text'])
 def SSinline(message):
 	try:
-		if message.text == 'Спамер':
+		if message.text == 'Настройки':
+			bot.send_message(message.chat.id, "/help - <b>Помощь. Что как работает.</b>\n\n/donate - <b>Донатерная</b>\n\n/addwl 79991234455 - <b>Добавить контакт в Белый список</b>\n\n/delwl 79991234455- <b>Удалить из Белого списка</b>\n\n/ping - <b>PONG</b>", parse_mode="HTML")
+		elif message.text == 'Новый номер':
+			bot.send_message(message.chat.id, "Я пока что не допилил всё нормально, поэтому нажми:\n/phone")
+		elif message.text == 'Спамер':
 			db = sqlite3.connect("users.db")
 			dbs = db.cursor()
 			sql="select * from id"+f'{message.chat.id}'
@@ -177,12 +183,14 @@ def SSinline(message):
 				but1 = types.InlineKeyboardButton(text="Старт", callback_data=phone+"_"+count)
 				key.add(but1)
 				bot.send_message(message.chat.id, 'Телефон: {}.\nКол-во потоков: {}'.format(phone, count), reply_markup=key)	
-			bot.register_next_step_handler(message, message);
+			bot.register_next_step_handler(message, vvv);
+		else:
+			pass
 	except:
 		pass
 
 @bot.callback_query_handler(func=lambda c:True)
-def message(c):
+def vvv(c):
 	try:
 		if c.data != None:
 			phone= c.data[:11]
