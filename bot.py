@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import telebot, requests, random, datetime, sys, time, argparse, json, re, sqlite3
 from telebot import types
-bot = telebot.TeleBot("965521501:AAHYwmNj3gR4xbJTDH9HsZkme0kObgrwI3o")
+bot = telebot.TeleBot("")
 owner = 355821673
 def sleep(x):
 	try:
